@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\{{modelName}};
+use Illuminate\View\View;
+
+class {{modelName}}Controller extends Controller
+{
+    // Get {{modelName}}s with pagination
+
+    public function index(Request $request): View
+    {
+        $data = {{modelName}}::latest()->paginate(10);
+        $excludedFields = ['id', 'created_at', 'updated_at'];
+        $fieldNames = isset($data[0]) ? array_diff(array_keys($data[0]->toArray()), $excludedFields) : [];
+        return view('{{modelNameLower}}s.index', compact('data', 'fieldNames'))->with('i', ($request->input('page', 1) - 1) * 5);
+    }
+
+    public function create()
+    {
+        $fields = {{formFields}}
+        return view('{{modelNameLower}}s.create', compact('fields'));
+    }
+    public function store(Request $request)
+    {
+        $data = $request->all();
+        {{modelName}}::create($data);
+        return redirect()->route('{{modelNameLower}}s.index')->with('success', '{{modelName}} created successfully!');
+    }
+
+    public function edit($id)
+    {
+        $fields = {{formFields}}
+        ${{modelNameLower}} = {{modelName}}::findOrFail($id);
+        return view('{{modelNameLower}}s.edit', compact('fields', '{{modelNameLower}}'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        ${{modelNameLower}} = {{modelName}}::findOrFail($id);
+        $data = $request->all();
+        ${{modelNameLower}}->update($data);
+        return redirect()->route('{{modelNameLower}}s.index')->with('success', '{{modelName}} updated successfully.');
+    }
+
+    public function destroy($id)
+    {
+        try {
+            ${{modelNameLower}} = {{modelName}}::findOrFail($id);
+            ${{modelNameLower}}->delete();
+
+            return redirect()->route('{{modelNameLower}}s.index')->with('success', '{{modelName}} deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('{{modelNameLower}}s.index')->with('error', 'Failed to delete {{modelNameLower}}.');
+        }
+    }
+
+}

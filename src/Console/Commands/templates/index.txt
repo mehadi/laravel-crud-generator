@@ -1,0 +1,59 @@
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex justify-between w-full">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight align-middle">
+                {{ __('{{modelName}} Management') }}
+            </h2>
+
+            <a href="{{ route('{{modelNameLower}}s.create') }}"
+               class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
+                Create New {{modelName}}
+            </a>
+        </div>
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                @if(count($data)>0)
+                    <table class="min-w-full border border-gray-200 divide-y divide-gray-300">
+                        <thead class="bg-gray-100">
+                        <tr>
+                            @foreach ($fieldNames as $fieldName)
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {{ ucfirst($fieldName) }}
+                                </th>
+                            @endforeach
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Action
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-300">
+                        @foreach ($data as ${{modelNameLower}})
+                            <tr>
+                                @foreach ($fieldNames as $fieldName)
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ ${{modelNameLower}}[$fieldName] }}</td>
+                                @endforeach
+                                <td class="px-6 py-4 whitespace-nowrap space-x-2">
+                                    <a href="{{ route('{{modelNameLower}}s.edit', ${{modelNameLower}}['id']) }}" class="text-blue-600 hover:text-blue-900">Edit</a>
+                                    <form action="{{ route('{{modelNameLower}}s.destroy', ${{modelNameLower}}['id']) }}" method="POST" style="display: inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                    {!! $data->links() !!}
+                @else
+                     <div class="p-6 text-gray-900">
+                         {{ __("No Data Found!") }}
+                     </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</x-app-layout>

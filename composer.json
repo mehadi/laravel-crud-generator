@@ -1,0 +1,30 @@
+{
+    "name": "mehadi/laravel-crud-generator",
+    "description": "A laravel package to generate CRUD by giving Model and database table column",
+    "type": "library",
+    "keywords": [
+        "laravel-crud-generator",
+        "crud-generator",
+        "laravel-auto-crud"
+    ],
+    "authors": [
+        {
+            "name": "Mehadi Hasan",
+            "email": "bdmehadih@gmail.com"
+        }
+    ],
+    "license": "MIT",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Mehadi\\CRUDGenerator\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Mehadi\\CRUDGenerator\\CRUDGeneratorServiceProvider"
+            ]
+        }
+    }
+}

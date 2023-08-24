@@ -1,0 +1,3 @@
+                    <x-nav-link :href="route('{{routeName}}.index')" :active="request()->routeIs('{{routeName}}.*')">
+                        {{ __('{{modelName}}s') }}
+                    </x-nav-link>
