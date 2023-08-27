@@ -52,6 +52,12 @@ Running this command is important to ensure that any database changes related to
 php artisan crud:delete Post
 ```
 
+5. To make these uploaded files accessible from the web, you need to create a symbolic link from the public/storage directory to the storage/app/public directory. This can be done using the following Artisan command:
+```bash
+php artisan storage:link
+```
+After running this command, Laravel will create a symbolic link that allows files in the **storage/app/public** directory to be accessed through the URL http://your-app-url/storage.
+
 ## Prerequisites
 Before using the **Laravel CRUD Generator**, make sure you have the following prerequisites set up in your project:
 
