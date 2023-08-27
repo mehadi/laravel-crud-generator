@@ -3,4 +3,7 @@
     <input type="file" name="{{inputTypeName}}" id="{{inputTypeID}}"
            class="border rounded w-full py-2 px-3 focus:outline-none focus:ring focus:border-blue-300"
            >
+    @error('{{labelFor}}')
+        <p class="text-red-500">{{ $message }}</p>
+    @enderror
 </div>

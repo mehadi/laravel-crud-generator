@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\{{modelName}};
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class {{modelName}}Controller extends Controller
 {
@@ -26,6 +27,19 @@ class {{modelName}}Controller extends Controller
     }
     public function store(Request $request)
     {
+        $rules = [];
+        foreach ($request->all() as $field => $value) {
+            $rules[$field] = 'required';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return redirect()->route('posts.create')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
         $data = $request->except(array_keys($request->allFiles()));
         $uploadedFiles = $request->allFiles();
         foreach ($uploadedFiles as $fieldName => $file) {
@@ -46,6 +60,19 @@ class {{modelName}}Controller extends Controller
 
     public function update(Request $request, $id)
     {
+        $rules = [];
+        foreach ($request->all() as $field => $value) {
+            $rules[$field] = 'required';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return redirect()->route('posts.create')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
         ${{modelNameLower}} = {{modelName}}::findOrFail($id);
         $data = $request->except(array_keys($request->allFiles()));
         $uploadedFiles = $request->allFiles();

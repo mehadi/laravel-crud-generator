@@ -198,17 +198,6 @@ class CrudMakeCommand extends Command
         }
         $output .= "\t\t];\n";
 
-        /*        $imageUploadCode = "";
-                foreach ($fields as $field) {
-                    if ($field['inputType'] === 'file') {
-                        $fileInputName = $field['name'];
-
-                        $imageUploadCode = '$data = $request->except("' . $fileInputName . '");';
-                        $imageUploadCode = $imageUploadCode."\n";
-                        $imageUploadCode = $imageUploadCode . 'if ($request->hasFile("' . $fileInputName . '")) {$file = $request->file("' . $fileInputName . '");$filename = time()."_".$file->getClientOriginalName();$path = $file->storeAs("uploads", $filename, "public");$data["' . $fileInputName . '"] = $path;};';
-                        $imageUploadCode = $imageUploadCode."\n";
-                    }
-                }*/
 
 
         $modelNameLower = strtolower($modelName);
