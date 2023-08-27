@@ -29,10 +29,19 @@ Once you've installed the package and set up the prerequisites, you can use the 
 1. Open your terminal in the root directory of your Laravel project.
 2. Use the following command to generate CRUD files for a specific model (e.g., `Post`) along with its columns:
 ```bash
-php artisan crud:make Post --data='title:string:text,description:text:textarea'
+php artisan crud:make Post --data='title:string:input,description:text:textarea,image:text:file'
 ```
 - The first parameter (`Post` in this example) is the name of the model.
 - The second parameter (`--data`) specifies the table columns for the model, where each column is defined as `column_name:data_type`.
+
+- Certainly, let's break down secound parameter (`--data='title:string:input,description:text:textarea,image:text:file'`):
+
+- `image`: This is the name of the column in the database table. It represents a field in the table where you'll store information related to images.
+
+- `text`: This is the data type assigned to the column in the database. In this case, it's set to "text," which indicates that the column can store a longer text-based content.
+
+- `file`: This refers to the input type that you would use in the user interface (UI) for uploading files. In the context of HTML forms, this would be an `<input>` element with `type="file"`. This allows users to select and upload files, such as images, from their devices.
+
 3. After creating a new Model, be sure to execute the following command:
 ```bash
 php artisan migrate
