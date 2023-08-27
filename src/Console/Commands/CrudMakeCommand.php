@@ -22,36 +22,44 @@ class CrudMakeCommand extends Command
 
             $fieldsArray = [];
             foreach ($fieldPairs as $fieldPair) {
-                list($name, $type) = explode(':', $fieldPair);
-                $fieldsArray[] = [
-                    'name' => $name,
-                    'type' => $type,
-                ];
+                try {
+                    list($name, $type, $input) = explode(':', $fieldPair);
+                    $fieldsArray[] = [
+                        'name' => $name,
+                        'type' => $type,
+                        'inputType' => $input,
+                    ];
+                } catch (\ErrorException $e) {
+                    // Handle the error
+                    $errorMessage = $e->getMessage();
+                    echo "Error: $errorMessage \n";
+                    $this->line("Please check the parameters you have passed during creating the MODEL!");
+                }
             }
             //Print the generated fields array
             //$this->line(print_r($fieldsArray));
-        }else{
+        } else {
             $this->line("Making $model without the fields...");
             sleep(.5);
         }
-
-        $this->createController($model,$fieldsArray);
-        $this->createModel($model,$fieldsArray);
-        $this->createMigration($model,$fieldsArray);
-        $this->generateViews($model);
+        $this->createController($model, $fieldsArray);
+        $this->createModel($model, $fieldsArray);
+        $this->createMigration($model, $fieldsArray);
+        $this->generateViews($model, $fieldsArray);
         $this->generateNavigationLinks($model);
 
-        $this->line("\n".$model.' CRUD generation completed.');
+        $this->line("\n" . $model . ' CRUD generation completed.');
     }
 
-    private function generateNavigationLinks($modelName){
+    private function generateNavigationLinks($modelName)
+    {
 
         $modelNameLower = strtolower($modelName);
-        $routeName = $modelNameLower.'s';
+        $routeName = $modelNameLower . 's';
 
         //add new route to web.php
         $web_file = base_path("routes/web.php");
-        if (file_exists($web_file)){
+        if (file_exists($web_file)) {
             $web_content = file_get_contents($web_file);
             $searchPattern = "Route::resource('/$routeName'";
 
@@ -59,15 +67,15 @@ class CrudMakeCommand extends Command
                 echo "\nThe pattern '{$searchPattern}' exists in the web.php file.";
             } else {
                 echo "\nThe pattern '{$searchPattern}' does not exist in the web.php file.";
-                $updatedContent = $web_content."Route::resource('/$routeName', \\App\\Http\\Controllers\\".$modelName."Controller::class);\n";
+                $updatedContent = $web_content . "Route::resource('/$routeName', \\App\\Http\\Controllers\\" . $modelName . "Controller::class);\n";
                 file_put_contents($web_file, $updatedContent);
             }
-        }else{
+        } else {
             echo "\nRoute file not found!";
         }
 
         // add new item on navigation menu
-        $navigationTemplate = __DIR__."/templates/navigationitem.txt";
+        $navigationTemplate = __DIR__ . "/templates/navigationitem.txt";
         $file = resource_path("views/layouts/navigation.blade.php");
         $additionalText = "";
         if (file_exists($navigationTemplate)) {
@@ -101,10 +109,10 @@ class CrudMakeCommand extends Command
     }
 
 
-    private function generateViews($modelName)
+    private function generateViews($modelName, $fieldsArray)
     {
         $modelNameLower = strtolower($modelName);
-        $views = ['index','create','edit'];
+        $views = ['index', 'create', 'edit'];
         // Define the paths
         $targetDirectory = resource_path("views/{$modelNameLower}s");
 
@@ -113,18 +121,55 @@ class CrudMakeCommand extends Command
             mkdir($targetDirectory, 0777, true);
         }
 
-        foreach ($views as $item){
-            $templateFilePath = __DIR__."/templates/$item.txt";
+        foreach ($views as $item) {
+            $templateFilePath = __DIR__ . "/templates/$item.txt";
             $targetViewPath = resource_path("views/{$modelNameLower}s/$item.blade.php");
+
             // Read the template file
             if (file_exists($templateFilePath)) {
-                $templateContent = file_get_contents($templateFilePath);
 
+                /*Generate the fields start*/
+                $generatedFields = "";
+
+                if ($item == "create" || $item == "edit") {
+
+                    foreach ($fieldsArray as $fieldsArrayItem) {
+                        //print_r($fieldsArrayItem);
+                        $inputType = $fieldsArrayItem['inputType'];
+                        $inputTypeFilePath = __DIR__ . "/templates/inputTypes/$inputType.txt";
+                        if ($item == "edit") {
+                            $valueVariable = "{{" . "$" . $modelNameLower . "['" . $fieldsArrayItem['name'] . "']" . "}}";
+                        } else {
+                            $valueVariable = "";
+                        }
+                        $inputTypeFileContent = file_get_contents($inputTypeFilePath);
+                        $inputTypeReplacements = [
+                            '{{labelFor}}' => $fieldsArrayItem['name'],
+                            '{{labelForName}}' => ucfirst($fieldsArrayItem['name']),
+                            '{{inputType}}' => $fieldsArrayItem['inputType'],
+                            '{{inputTypeName}}' => $fieldsArrayItem['name'],
+                            '{{inputTypeID}}' => $fieldsArrayItem['name'],
+                            '{{modelNameLower}}' => $modelNameLower,
+                            '{{valueVariable}}' => $valueVariable
+                        ];
+                        $updatedInputTypeContent = str_replace(array_keys($inputTypeReplacements), array_values($inputTypeReplacements), $inputTypeFileContent);
+
+                        $generatedFields = $generatedFields . "\n" . $updatedInputTypeContent;
+
+                    }
+                }
+                /*Generate the fields end*/
+
+                //print_r($generatedFields);
+
+                $templateContent = file_get_contents($templateFilePath);
                 // Replace placeholders with actual values
                 $replacements = [
                     '{{modelName}}' => $modelName,
                     '{{modelNameLower}}' => $modelNameLower,
+                    '{{formFields}}' => $generatedFields,
                 ];
+
                 $updatedContent = str_replace(array_keys($replacements), array_values($replacements), $templateContent);
 
                 // Write the updated content to the view file
@@ -140,28 +185,42 @@ class CrudMakeCommand extends Command
         }
     }
 
-    protected function createController($modelName,$fields): void
+    protected function createController($modelName, $fields): void
     {
 
         $output = "[\n";
         foreach ($fields as $field) {
             $output .= "\t\t\t[\n";
             $output .= "\t\t\t\t'name' => '{$field['name']}',\n";
-            $output .= "\t\t\t\t'type' => '{$field['type']}'\n";
+            $output .= "\t\t\t\t'type' => '{$field['type']}',\n";
+            $output .= "\t\t\t\t'inputType' => '{$field['inputType']}'\n";
             $output .= "\t\t\t],\n";
         }
         $output .= "\t\t];\n";
 
+        /*        $imageUploadCode = "";
+                foreach ($fields as $field) {
+                    if ($field['inputType'] === 'file') {
+                        $fileInputName = $field['name'];
+
+                        $imageUploadCode = '$data = $request->except("' . $fileInputName . '");';
+                        $imageUploadCode = $imageUploadCode."\n";
+                        $imageUploadCode = $imageUploadCode . 'if ($request->hasFile("' . $fileInputName . '")) {$file = $request->file("' . $fileInputName . '");$filename = time()."_".$file->getClientOriginalName();$path = $file->storeAs("uploads", $filename, "public");$data["' . $fileInputName . '"] = $path;};';
+                        $imageUploadCode = $imageUploadCode."\n";
+                    }
+                }*/
+
+
         $modelNameLower = strtolower($modelName);
         // Load the controller template from the file
-        $templateFilePath = __DIR__.'/templates/controller.txt';
+        $templateFilePath = __DIR__ . '/templates/controller.txt';
 
         $controllerTemplate = file_get_contents($templateFilePath);
 
         $replacements = [
             '{{modelName}}' => $modelName,
             '{{modelNameLower}}' => $modelNameLower,
-            '{{formFields}}' => $output,
+            '{{formFields}}' => $output
         ];
         $controllerCode = str_replace(array_keys($replacements), array_values($replacements), $controllerTemplate);
 
@@ -184,7 +243,7 @@ class CrudMakeCommand extends Command
         $attributes = array_column($fields, 'name'); // Define the model attributes
 
         // Load the model template from the file
-        $templateFilePath = __DIR__.'/templates/model.txt';
+        $templateFilePath = __DIR__ . '/templates/model.txt';
         $modelTemplate = file_get_contents($templateFilePath);
 
         // Replace placeholders with actual values
@@ -208,7 +267,7 @@ class CrudMakeCommand extends Command
     }
 
 
-    protected function createMigration($modelName,$fields)
+    protected function createMigration($modelName, $fields)
     {
 
         // Generate the current timestamp for the migration file name
@@ -219,7 +278,7 @@ class CrudMakeCommand extends Command
         $attributes = array_column($fields, 'name'); // Extract attribute names
 
         // Load the migration template from the file
-        $templateFilePath = __DIR__.'/templates/migration.txt';
+        $templateFilePath = __DIR__ . '/templates/migration.txt';
         $migrationTemplate = file_get_contents($templateFilePath);
 
         // Replace placeholders with actual values
@@ -230,7 +289,7 @@ class CrudMakeCommand extends Command
         }
         $migrationCode = str_replace('{{attributeFields}}', $attributeFields, $migrationTemplate);
         $migrationCode = str_replace('{{migrationFileName}}', $migrationFileName, $migrationCode);
-        $migrationCode = str_replace('{{tableName}}', strtolower($modelName).'s', $migrationCode);
+        $migrationCode = str_replace('{{tableName}}', strtolower($modelName) . 's', $migrationCode);
 
         // Specify the migration file path
         $migrationFilePath = database_path("migrations/$migrationFileName.php");

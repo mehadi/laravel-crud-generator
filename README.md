@@ -28,11 +28,14 @@ Once you've installed the package and set up the prerequisites, you can use the 
 ```bash
 php artisan crud:make Post --data='title:string,description:text'
 ```
-
 - The first parameter (`Post` in this example) is the name of the model.
 - The second parameter (`--data`) specifies the table columns for the model, where each column is defined as `column_name:data_type`.
-
-3. To delete all the generated CRUD files and clean up, use the following command:
+3. After creating a new Model, be sure to execute the following command:
+```bash
+php artisan migrate
+```
+Running this command is important to ensure that any database changes related to the new Model are properly applied. This helps keep your database schema synchronized with your application's data structure.
+4. To delete all the generated CRUD files and clean up, use the following command:
 ```bash
 php artisan crud:delete Post
 ```

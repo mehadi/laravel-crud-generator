@@ -33,7 +33,7 @@
                         @foreach ($data as ${{modelNameLower}})
                             <tr>
                                 @foreach ($fieldNames as $fieldName)
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ ${{modelNameLower}}[$fieldName] }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap truncate" >{{ ${{modelNameLower}}[$fieldName] }}</td>
                                 @endforeach
                                 <td class="px-6 py-4 whitespace-nowrap space-x-2">
                                     <a href="{{ route('{{modelNameLower}}s.edit', ${{modelNameLower}}['id']) }}" class="text-blue-600 hover:text-blue-900">Edit</a>

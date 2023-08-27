@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\{{modelName}};
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
 
 class {{modelName}}Controller extends Controller
 {
@@ -25,7 +26,13 @@ class {{modelName}}Controller extends Controller
     }
     public function store(Request $request)
     {
-        $data = $request->all();
+        $data = $request->except(array_keys($request->allFiles()));
+        $uploadedFiles = $request->allFiles();
+        foreach ($uploadedFiles as $fieldName => $file) {
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('uploads', $filename, 'public');
+            $data[$fieldName] = $path;
+        }
         {{modelName}}::create($data);
         return redirect()->route('{{modelNameLower}}s.index')->with('success', '{{modelName}} created successfully!');
     }
@@ -40,7 +47,16 @@ class {{modelName}}Controller extends Controller
     public function update(Request $request, $id)
     {
         ${{modelNameLower}} = {{modelName}}::findOrFail($id);
-        $data = $request->all();
+        $data = $request->except(array_keys($request->allFiles()));
+        $uploadedFiles = $request->allFiles();
+        foreach ($uploadedFiles as $fieldName => $file) {
+            if (${{modelNameLower}}->$fieldName) {
+                Storage::disk('public')->delete(${{modelNameLower}}->$fieldName);
+            }
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('uploads', $filename, 'public');
+            $data[$fieldName] = $path;
+        }
         ${{modelNameLower}}->update($data);
         return redirect()->route('{{modelNameLower}}s.index')->with('success', '{{modelName}} updated successfully.');
     }
@@ -50,7 +66,6 @@ class {{modelName}}Controller extends Controller
         try {
             ${{modelNameLower}} = {{modelName}}::findOrFail($id);
             ${{modelNameLower}}->delete();
-
             return redirect()->route('{{modelNameLower}}s.index')->with('success', '{{modelName}} deleted successfully.');
         } catch (\Exception $e) {
             return redirect()->route('{{modelNameLower}}s.index')->with('error', 'Failed to delete {{modelNameLower}}.');
