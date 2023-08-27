@@ -22,6 +22,7 @@ The **Laravel CRUD Generator** offers the following features:
 * Input fields **`[text, textarea, email, number, file]`**
 * File uploading
 * Deleting old file when updating any model post
+* Simple Form validation
 
 ## Usage
 Once you've installed the package and set up the prerequisites, you can use the **Laravel CRUD Generator** to quickly create CRUD operations for your models. Here's how:

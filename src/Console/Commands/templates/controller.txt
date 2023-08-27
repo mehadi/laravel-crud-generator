@@ -68,7 +68,7 @@ class {{modelName}}Controller extends Controller
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            return redirect()->route('posts.create')
+            return redirect()->route('posts.edit', $id)
                 ->withErrors($validator)
                 ->withInput();
         }
