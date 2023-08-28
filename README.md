@@ -86,6 +86,13 @@ npm install
 npm run dev
 ```
 
+## Screenshots
+###### Add new Post form
+![View Post Modal](/screenshots/post_form.png)
+
+###### List Post
+![Add Post Modal](/screenshots/post_list.png)
+
 ## Notes
 - This package helps automate the process of generating CRUD operations for your Laravel models, saving you time and effort.
 - Ensure that you have all the prerequisites installed and set up correctly before using the CRUD generator.
